@@ -14,7 +14,7 @@ const (
 
 // generateRandomElements generates random elements.
 func generateRandomElements(size int) []int {
-	if size == 0 {
+	if size <= 0 {
 		return []int{}
 	}
 
@@ -45,6 +45,9 @@ func maxChunks(data []int) int {
 	if len(data) == 0 {
 		return 0
 	}
+	if len(data) < CHUNKS {
+		return maximum(data)
+	}
 
 	var wg sync.WaitGroup
 	maxs := make([]int, CHUNKS)
@@ -53,6 +56,9 @@ func maxChunks(data []int) int {
 	for i := 0; i < CHUNKS; i++ {
 		start := i * chunkSize
 		end := start + chunkSize
+		if i == CHUNKS-1 {
+			end = len(data)
+		}
 
 		wg.Add(1)
 		go func(idx int, slice []int) {
@@ -66,7 +72,7 @@ func maxChunks(data []int) int {
 }
 
 func main() {
-	fmt.Printf("Генерируем %d целых чисел", SIZE)
+	fmt.Printf("Генерируем %d целых чисел\n", SIZE)
 	data := generateRandomElements(SIZE)
 
 	fmt.Println("Ищем максимальное значение в один поток")
@@ -76,7 +82,7 @@ func main() {
 
 	fmt.Printf("Максимальное значение элемента: %d\nВремя поиска: %d ms\n", max, elapsed)
 
-	fmt.Printf("Ищем максимальное значение в %d потоков", CHUNKS)
+	fmt.Printf("Ищем максимальное значение в %d потоков\n", CHUNKS)
 	start = time.Now()
 	max = maxChunks(data)
 	elapsed = time.Since(start).Microseconds()
